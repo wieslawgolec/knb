@@ -71,9 +71,12 @@ $TARGET:
 
 function makefile_up()
 {
-SSL_OBJ=""
+# When SSL is enabled insert a full "ssl.o \\" line so the continuation
+# stays correct. When disabled leave nothing (avoids blank line / \\cmds.o).
+SSL_LINE=""
 if [ "$HAVE_SSL" = "true" ]; then
-  SSL_OBJ="ssl.o \\"
+  SSL_LINE="ssl.o \\\\
+"
 fi
 
 echo "#
@@ -98,7 +101,7 @@ cfg.o \\
 irc.o \\
 auth.o \\
 sha256.o \\
-${SSL_OBJ}cmds.o \\
+${SSL_LINE}cmds.o \\
 http.o \\
 match.o \\
 queue.o \\
