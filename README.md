@@ -12,7 +12,7 @@
 
 It stays connected, watches a list of preferred nicks with `ISON`, and claims them when they free up. Optional channels, vhosts, and a simple userfile complete the picture.
 
-**Version:** 0.2.6  
+**Version:** 0.3.0  
 **License:** GPL-style / historical psotnic-related lineage (see source headers)
 
 ---
@@ -138,7 +138,7 @@ On connect the bot sends `CAP LS 302`, requests `sasl` when advertised, and auth
 
 - Prefer packages from CI or `make release` if a local build fails on an exotic OS.
 - Linking warnings on some platforms can be ignored when the binary still runs.
-- See [CHANGELOG](CHANGELOG) for history.
+- See [CHANGELOG.md](CHANGELOG.md) for history.
 
 ---
 
