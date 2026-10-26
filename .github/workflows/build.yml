@@ -1,0 +1,61 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    name: Ubuntu
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+      - name: Configure and build
+        working-directory: src
+        run: |
+          set -e
+          chmod +x configure configure.sh
+          bash configure --without-validator
+          make dynamic
+          ls -la ../knb*
+          file ../knb*
+
+  macos:
+    runs-on: macos-latest
+    name: macOS
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure and build
+        working-directory: src
+        run: |
+          set -e
+          chmod +x configure configure.sh
+          bash configure --without-validator
+          make dynamic
+          ls -la ../knb*
+          file ../knb*
+
+  freebsd:
+    runs-on: ubuntu-latest
+    name: FreeBSD
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build on FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y gmake gcc bash
+          run: |
+            set -e
+            cd src
+            chmod +x configure configure.sh
+            bash configure --without-validator
+            gmake dynamic || make dynamic
+            ls -la ../knb*

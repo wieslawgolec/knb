@@ -1,7 +1,7 @@
+#!/usr/bin/env bash
 #
-# `which sh` for path
-# on linux: /bin/sh
-# on freebsd: /usr/local/bin/sh
+# configure.sh for knb - modernized 2026
+# Supports: Linux, macOS, FreeBSD, SunOS, Cygwin
 #
 
 function makefile_main()
@@ -14,7 +14,7 @@ echo "#
 
 default:
 	@echo '-+- >> Available targets:'
-	@echo '-+- = dynamic (prefered for most systems)'
+	@echo '-+- = dynamic (preferred for most systems)'
 	@echo '-+- = static'
 	@echo '-+- = debug'
 
@@ -63,9 +63,9 @@ $TARGET:
 	@echo '-+- Making key'
 	@echo '-+- Compiling key.c'
 	@\$(CC) key.c -o \$(OUT)
-	@echo '-+- Genereting key.h'
+	@echo '-+- Generating key.h'
 	@./key 
-	@echo '-+- Please remove key.h when you finish compilation' " > Makefile.$TARGET
+	@echo '-+- key.h ready' " > Makefile.$TARGET
 }
 
 function makefile_up()
@@ -100,17 +100,23 @@ update.o \\
 signals.o \\
 validate.o \\
 functions.o \\
-main.o \\
+main.o
 
-$TARGET: \$(EXE_DEPEND)
+$TARGET: key.h \$(EXE_DEPEND)
 	@echo '-+- Linking'
-	@\$(CC) \$(EXE_DEPEND) -o \$(OUT) \$(CFLAGS) \$(LFLAGS) "  > Makefile.$TARGET
+	@\$(CC) \$(EXE_DEPEND) -o \$(OUT) \$(CFLAGS) \$(LFLAGS)
+
+# key.h is required by validate.c
+validate.o: key.h
+
+key.h:
+	@make -f Makefile.key
+"  > Makefile.$TARGET
 }
 
 function makefile_done()
 {
-
-echo "	@echo '-+- Done'" >> Makefile.$TARGET
+	echo "	@echo '-+- Done'" >> Makefile.$TARGET
 }
 
 function makefile_release()
@@ -123,12 +129,13 @@ echo "	@echo '-+- Creating release'
 	@cp ../cfg-examples/* knb/cfg-examples
 	@cp ../CHANGELOG knb/CHANGELOG
 	@cp ../README knb/README
-	@echo -+- Striping debug information
-	@strip \$(OUT)
-	@echo '-+- Building validator'
-	@\$(CC) sha256.o -o validator validator.c 
-	@echo '-+- Patching file'
-	@./validator \$(OUT)
+	@echo -+- Stripping debug information
+	@strip \$(OUT) || true
+	@if [ -f validate.c ] && [ -f key.h ]; then \\
+		echo '-+- Building validator'; \\
+		\$(CC) sha256.o -o validator validator.c || true; \\
+		if [ -x ./validator ]; then echo '-+- Patching file'; ./validator \$(OUT) || true; fi; \\
+	fi
 	@cp \$(OUT) knb/\$(OUT)
 	@ln -s \$(OUT) knb/knb
 	@ln -s cfg-examples/conf-ipv4 knb/conf
@@ -141,13 +148,13 @@ echo "	@echo '-+- Creating release'
 
 function makefile_world()
 {
-echo "	@echo -+- Striping debug information
-	@strip \$(OUT)
-	@echo '-+- Building validator'
-	@\$(CC) sha256.o -o validator validator.c 
-	@echo '-+- Patching file'
-	@./validator \$(OUT)
-
+echo "	@echo -+- Stripping debug information
+	@strip \$(OUT) || true
+	@if [ -f validate.c ] && [ -f key.h ]; then \\
+		echo '-+- Building validator'; \\
+		\$(CC) sha256.o -o validator validator.c || true; \\
+		if [ -x ./validator ]; then echo '-+- Patching file'; ./validator \$(OUT) || true; fi; \\
+	fi
 	@mv \$(OUT) ../\$(OUT)
 	@rm -fr ../knb 
 	@ln -s \$(OUT) ../knb" >> Makefile.$TARGET
@@ -155,15 +162,15 @@ echo "	@echo -+- Striping debug information
 
 function makefile_deb()
 {
-echo "	@echo '-+- Building validator'
-	@\$(CC) sha256.o -o validator validator.c 
-	@echo '-+- Patching file'
-	@./validator \$(OUT)
+echo "	@echo '-+- Building validator (optional)'
+	@if [ -f validate.c ] && [ -f key.h ]; then \\
+		\$(CC) sha256.o -o validator validator.c || true; \\
+		if [ -x ./validator ]; then ./validator \$(OUT) || true; fi; \\
+	fi
 	@mv \$(OUT) ../\$(OUT)
 	@rm -fr ../knb 
 	@ln -s \$(OUT) ../knb" >> Makefile.$TARGET
 }
-
 
 function makefile_src()
 {
@@ -173,7 +180,7 @@ function makefile_src()
 # Warning! All changes made in this file will be lost!
 #    
 
-OUT = knb-$VER-src
+OUT = knb-\$VER-src
 
 $TARGET:
 	@echo '-+- Cleaning up'
@@ -214,21 +221,15 @@ OUT = $OUT
 $TARGET:
 	@echo '-+- Cleaning up'
 	@rm -fr knb *.o validator key.h key Makefile Makefile.* ../knb ../\$(OUT)
-#	@rm -fr ../*.uf ../pid.* ../*.log " > Makefile.$TARGET		
-    
+" > Makefile.$TARGET		
 }
 
 function help()
 {
-    if [ ! "$UNAME" = "cygwin" ]; then
-	echo "-+-  --with-ipv6 - configure with ipv6 enabled (default on)"
-	echo "-+-  --without-ipv6 - configure without ipv6"	
-    else
-	echo "-+-  --with-ipv6 - configure with ipv6 enabled"
-	echo "-+-  --without-ipv6 - configure without ipv6 (default on)"	
-    fi
-	echo "-+-  --without-validator - turn off binary validation on start (default off)"
-	echo "-+-  --help - this help ;-P" 
+    echo "-+-  --with-ipv6          enable IPv6 (default: on except Cygwin)"
+    echo "-+-  --without-ipv6       disable IPv6"
+    echo "-+-  --without-validator  disable binary validation/protector"
+    echo "-+-  --help               this help"
     exit 1
 }
 
@@ -236,65 +237,39 @@ function getarg()
 {
     IPSET=false
     VALIDSET=false
-    VALIDATOR=true
-    
-    if [ "$ARG2" = "" ]; then
-        if [ "$ARG" = "" ]; then
-	    if [ "$UNAME" = "cygwin" ]; then
-		HAVE_IPV6=false
-	    else
-		HAVE_IPV6=true
-	    fi
-	    VALIDATOR=true
-	    
-	    # check if that wasnt reset
-	    IPSET=true
-	    VALIDSET=true
-	
-	else 
-	    if [ "$ARG" = "--with-ipv6" ]; then
-		HAVE_IPV6=true
-		IPSET=true
-	    elif [ "$ARG" = "--without-ipv6" ]; then
-		HAVE_IPV6=false
-		IPSET=true
-	    elif [ "$ARG" = "--without-validator" ]; then
-		VALIDATOR=false
-		VALIDSET=true
-	    else
-		help  
-	    fi
 
-	fi
+    VALIDATOR=true
+    if [ "$UNAME" = "cygwin" ]; then
+        HAVE_IPV6=false
     else
-	if [ "$ARG2" = "--with-ipv6" ]; then
-	    if [ $IPSET = true ]; then
-		echo "-+- Duplicated $ARG2 flag"
-		exit 1
-	    else
-		HAVE_IPV6=true
-		IPSET=true
-	    fi
-	elif [ "$ARG2" = "--without-ipv6" ]; then
-	    if [ $IPSET = true ]; then
-		echo "-+- Duplicated $ARG2 flag"
-		exit 1
-	    else
-		HAVE_IPV6=false
-		IPSET=true
-	    fi
-	elif [ "$ARG2" = "--without-validator" ]; then
-	    if [ $VALIDSET = true ]; then
-		echo "-+- Duplicated $ARG2 flag"
-		exit 1
-	    else
-		VALIDATOR=false
-		VALIDSET=true
-	    fi
-	else
-	    help    
-	fi
+        HAVE_IPV6=true
     fi
+
+    for arg in "$@"; do
+        case "$arg" in
+            --with-ipv6)
+                if [ "$IPSET" = true ]; then echo "-+- Duplicated $arg"; exit 1; fi
+                HAVE_IPV6=true; IPSET=true
+                ;;
+            --without-ipv6)
+                if [ "$IPSET" = true ]; then echo "-+- Duplicated $arg"; exit 1; fi
+                HAVE_IPV6=false; IPSET=true
+                ;;
+            --without-validator)
+                if [ "$VALIDSET" = true ]; then echo "-+- Duplicated $arg"; exit 1; fi
+                VALIDATOR=false; VALIDSET=true
+                ;;
+            --help|-h)
+                help
+                ;;
+            "")
+                ;;
+            *)
+                echo "-+- Unknown option: $arg"
+                help
+                ;;
+        esac
+    done
 }
 
 function make_echo()
@@ -307,7 +282,6 @@ function make_me()
     makefile_up
     makefile_world
 }
-
 
 function do_dynamic()
 {
@@ -327,7 +301,7 @@ function do_debug()
 {
     make_echo
     FLAGS="-DDEBUG"
-    CFLAGS="-Wall"
+    CFLAGS="$CFLAGS -Wall"
     makefile_up
     makefile_deb
 }
@@ -335,84 +309,83 @@ function do_debug()
 function do_release()
 {
     FLAGS="-static"
-    if [ HAVE_IPV6 = true ]; then
-	CFLAGS="-pipe -O2 -DHAVE_IPV6 -DHAVE_VALIDATOR"
-    else
-	CFLAGS="-pipe -O2 -DHAVE_VALIDATOR"
-    fi
     makefile_up
     makefile_release
 }
 
+# ========== main ==========
+
 UNAME=`uname | awk '{ print tolower($1) }'`
 
-# fix names
 case $UNAME in
-    SunOS) UNAME="sunos";;
-    cygwin_*) UNAME="cygwin";;
+    sunos) UNAME="sunos";;
+    cygwin*) UNAME="cygwin";;
+    darwin) UNAME="darwin";;
+    freebsd) UNAME="freebsd";;
 esac
 
 MACHINE=`uname -m`
 
-VER=`cat defines.h | egrep KNB_VERSION_STR | awk '{ print substr($3, 2, length($3)-2) }'`
-VER=`echo -e $VER`
+VER=`grep KNB_VERSION_STR defines.h | awk '{ print substr($3, 2, length($3)-2) }'`
+VER=`echo $VER | tr -d '\r'`
 OUT="knb-$VER-$UNAME"
-GCC=`gcc -v 2>&1 | tail -1 | awk '{print $3}'`
+GCC=`gcc -dumpversion 2>/dev/null || echo "unknown"`
 
+LFLAGS=""
+CFLAGS="-pipe -O2"
 
-ARG="$1"
-ARG2="$2"
+getarg "$@"
 
 if [ "$UNAME" = "sunos" ]; then 
-    $LFLAGS="-lsocket -lnsl"
-    $CFLAGS="-DSUNOS -pipe -O2"    
+    LFLAGS="-lsocket -lnsl"
+    CFLAGS="$CFLAGS -DSUNOS"
 elif [ "$UNAME" = "cygwin" ]; then 
-    LFLAGS=""
-    CFLAGS="-DWINDOWS -march=$MACHINE -pipe -O2"
-else
-    LFLAGS=""
-    GCCVER=`echo $GCC | sed 's/[.]*//g'`
-
-    if [ $GCCVER -ge 423 ]; then
-        CFLAGS="-march=native -pipe -O2"
-    else
-	CFLAGS="-march=$MACHINE -pipe -O2"
-    fi
+    CFLAGS="$CFLAGS -DWINDOWS"
+elif [ "$UNAME" = "darwin" ]; then
+    CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+elif [ "$UNAME" = "freebsd" ]; then
+    CFLAGS="$CFLAGS -D_FREEBSD"
 fi
 
-getarg
+if [ "$HAVE_IPV6" = "true" ]; then
+    CFLAGS="$CFLAGS -DHAVE_IPV6"
+fi
+
+if [ "$VALIDATOR" = "true" ]; then
+    CFLAGS="$CFLAGS -DHAVE_VALIDATOR"
+fi
 
 echo "-+- Running configure"
 echo "-+- Operating system: $UNAME"
 echo "-+- Architecture type: $MACHINE"
 echo "-+- Gnu C Compiler version: $GCC"
 echo -n "-+- IPv6 enabled: "
-if [ $HAVE_IPV6 = true ]; then
+if [ "$HAVE_IPV6" = "true" ]; then
     echo "yes (./configure --without-ipv6 to turn off)"
-    CFLAGS="$CFLAGS -DHAVE_IPV6"
 else
-    echo "no (./configure --with-ipv6 to trun it on)"
+    echo "no (./configure --with-ipv6 to turn it on)"
 fi
 echo -n "-+- Validator enabled: "
-if [ $VALIDATOR = true ]; then
+if [ "$VALIDATOR" = "true" ]; then
     echo "yes (./configure --without-validator to turn off)"
-    CFLAGS="$CFLAGS -DHAVE_VALIDATOR"    
 else
-    echo "no (binary will be unprotected now)"            
+    echo "no (binary will be unprotected)"
 fi
+echo "-+- CFLAGS: $CFLAGS"
+echo "-+- LFLAGS: $LFLAGS"
 echo "-+- Generating Makefile"
 makefile_main
-for i in "key" "dynamic" "static" "debug" "release" "src" "clean"
+for i in key dynamic static debug release src clean
 do
     TARGET="$i"    
     case $TARGET in
-	"key") makefile_key ;;
-	"dynamic") do_dynamic ;;
-	"static") do_static ;;
-	"debug") do_debug ;;
-	"release") do_release ;;
-	"src") makefile_src ;;
-	"clean") makefile_clean ;;
+	key) makefile_key ;;
+	dynamic) do_dynamic ;;
+	static) do_static ;;
+	debug) do_debug ;;
+	release) do_release ;;
+	src) makefile_src ;;
+	clean) makefile_clean ;;
     esac 
     makefile_done
 done
