@@ -1,6 +1,6 @@
 #define KNB_ALPHABET 	"#alphabet"
-#define KNB_VERSION_INT	"2000600"
-#define KNB_VERSION_STR "0.2.6"
+#define KNB_VERSION_INT	"3000000"
+#define KNB_VERSION_STR "0.3.0"
 #define KNB_AUTOR	"Esio"
 #define KNB_EMAIL	"esio(at)hoth.amu.edu.pl"
 #define KNB_SHORT  	"Knb"
