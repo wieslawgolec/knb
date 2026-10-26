@@ -13,6 +13,7 @@ struct knb_server
 	char ip[MASK_LEN + 1];
 	unsigned int port;
 	unsigned int type;
+	bool use_ssl;
 };
 
 struct knb_queue
@@ -163,7 +164,17 @@ struct knb_user
 	int alphabet;
 	/* anty flood detectors */
 	int delay;
+
+	/* SSL / TLS (optional at build time) */
+#ifdef HAVE_SSL
+	void *ssl;
+	bool use_ssl;
+	int ssl_state; /* 0 = none/done, 1 = handshake in progress */
+#endif
+	bool prefer_ssl; /* config: ssl on */
+
+	/* SASL PLAIN */
+	char sasl_user[IDENT_LEN + 1];
+	char sasl_pass[64];
+	int sasl_state; /* 0 off/done, 1 wait LS, 2 wait ACK, 3 AUTH in progress */
 };
-
-
-
