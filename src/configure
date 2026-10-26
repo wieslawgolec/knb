@@ -2,8 +2,9 @@
 
 BASH=`which bash`
 
-if [ ! "$BASH" = "" ]; then
-    $BASH configure.sh $1 $2
+if [ -n "$BASH" ]; then
+    exec "$BASH" configure.sh "$@"
 else
-    echo "-+- Bash shell not found. configure falied :("
+    echo "-+- Bash shell not found. configure failed :("
+    exit 1
 fi
