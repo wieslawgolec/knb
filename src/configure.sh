@@ -71,12 +71,12 @@ $TARGET:
 
 function makefile_up()
 {
-# Build EXE_DEPEND list. ssl.o is inserted only when HAVE_SSL=true.
-# Each object ends with " \\" so make sees proper line continuations.
+# ssl.o is optional. Keep the backslash continuation correct in both cases.
 if [ "$HAVE_SSL" = "true" ]; then
-  SSL_OBJS="ssl.o \\"
+  AFTER_SHA="ssl.o \\\\
+cmds.o \\"
 else
-  SSL_OBJS=""
+  AFTER_SHA="cmds.o \\"
 fi
 
 cat > Makefile.$TARGET << EOF
@@ -102,8 +102,7 @@ cfg.o \\
 irc.o \\
 auth.o \\
 sha256.o \\
-${SSL_OBJS}
-cmds.o \\
+${AFTER_SHA}
 http.o \\
 match.o \\
 queue.o \\
