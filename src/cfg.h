@@ -23,6 +23,10 @@
 #define CFG_ALPHABET	"alphabet" /* auto add #alphabet */
 #define CFG_DELAY	"delay" /* 0 - 10s max - additional penalty for sending ison/nick */
 
+#define CFG_SSL		"ssl" /* on|off - prefer TLS */
+#define CFG_SASLUSER	"sasluser"
+#define CFG_SASLPASS	"saslpass"
+
 #ifdef DEBUG
 #define CFG_DONTFORK	"dontfork"
 #endif
