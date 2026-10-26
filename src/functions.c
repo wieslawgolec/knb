@@ -176,15 +176,27 @@ void loguj(char *format, ...)
 }
 
 
-/* write to a socket */
+/* write to a socket (SSL-aware when HAVE_SSL and handshake done) */
 void sock_write(int fd, char *format, ...)
 {
     va_list args;
     char s[MIN_LEN + 1];
+    int n;
 
     va_start(args, format);
     vsprintf(s, format, args);
     va_end(args);
+
+#ifdef HAVE_SSL
+    if (me.use_ssl && me.ssl && me.ssl_state == 0) {
+	n = ssl_write_sock(s, (int)strlen(s));
+	if (n < 0) {
+	    me.conn = 0;
+	    send_quit("SSL write error");
+	}
+	return;
+    }
+#endif
 
     if((write(fd, &s, strlen(s))) == -1)
     {
@@ -217,8 +229,15 @@ void kill_socket(int fd)
 #ifdef _NO_LAME_ERRNO
     int e = errno;
 #endif
-    shutdown(fd, SHUT_RDWR);
-    close(fd);
+#ifdef HAVE_SSL
+    ssl_free();
+    me.use_ssl = false;
+    me.ssl_state = 0;
+#endif
+    if (fd > 0) {
+	shutdown(fd, SHUT_RDWR);
+	close(fd);
+    }
 #ifdef _NO_LAME_ERRNO
     errno = e;
 #endif
@@ -588,7 +607,12 @@ bool isrealstr(const char *str)
 
 void connect_bot()
 {
-    me.conn = 0;    
+    me.conn = 0;
+#ifdef HAVE_SSL
+    me.use_ssl = false;
+    me.ssl_state = 0;
+    ssl_free();
+#endif
     
     if(me.last_server == -1 && me.reconnect)
     {
@@ -605,7 +629,12 @@ void connect_bot()
 #endif
 	if(me.custom_server.type == 4)
 	    if((me.sock = do_connect(me.custom_server.ip, me.custom_server.port, strlen(me.vhost.ip) ? me.vhost.ip : "", -1)) < 0)
-		me.sock = 0;	
+		me.sock = 0;
+#ifdef HAVE_SSL
+	if (me.sock > 0) {
+	    me.use_ssl = me.custom_server.use_ssl || me.prefer_ssl || (me.custom_server.port == 6697);
+	}
+#endif
     }
     else
     {
@@ -636,6 +665,11 @@ void connect_bot()
 	if(me.server[i].type == 4)
 	    if((me.sock = do_connect(me.server[i].ip, me.server[i].port, strlen(me.vhost.ip) ? me.vhost.ip : "", -1)) < 0)
 		me.sock = 0;
+#ifdef HAVE_SSL
+	if (me.sock > 0) {
+	    me.use_ssl = me.server[i].use_ssl || me.prefer_ssl || (me.server[i].port == 6697);
+	}
+#endif
     }
     me.next_reconnect = now + CONNECT_TIMEOUT;
 }
@@ -672,6 +706,10 @@ void precache()
 	strcpy(me.uname_str, name.sysname);
 	
     me.uname_int = get_index_by_uname(me.uname_str);
+
+#ifdef HAVE_SSL
+    init_ssl();
+#endif
 }
 
 void precache_expand()
