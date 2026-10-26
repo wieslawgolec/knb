@@ -1,0 +1,71 @@
+[EN]
+
+Few infromations about istallation, configuration n using this.
+
+To compile u only need to:
+(
+% cd knb/src
+% ./configure 
+(
+    * to delete old files founded during compilation do:
+    % make clean 
+)
+% ./configure
+% make (and choose your destiny :)) 
+    * dynamic (make dynamic) (prefered for most systems)
+    * static  (make static)
+    * debug   (make debug)
+
+To make a package do:
+(
+    % cd knb/src
+    % ./configure
+    % make release 
+)
+
+To make a src package do:
+(
+    % cd knb/src
+    % ./configure 
+    % make src
+)
+
+To make clean do:
+(
+    % cd knb/src
+    % ./configure 
+    % make clean
+{
+
+n dont care about warnings in linking ;)
+
+When compilation falied, u can allways use packages, which u can find on this page
+
+For configuration file, there is example under name 'conf' 
+
+Therein are described all available options
+
+To add 1st mask/user u should:
+
+> msg nick !new 
+
+or on a channel where he is:
+> !new 
+
+then bot will add mask, which u gave
+(
+	in mask u can use chars `*', `?', i `#'
+	* = replace any sequence of chars
+	? = replace exactly one char
+	# = replace exactly one number
+)
+
+Commands:
+
+command should begin with char: `.' , `!' or `@'
+
+more info in !help
+
+{When u find in this README some erros or miss chars contact with me (my english is basic)} 
+
+-- Esio

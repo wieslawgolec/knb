@@ -1,0 +1,36 @@
+#
+# Example ipv4 with vhost  config file (Knb v0.2.x)
+# 
+# Options:
+#  nick 	<nickname> 		+required+
+#  altnick	<on | off>		+optional+
+#  nickappend   <chars>			+optional+	used if altnick is turned on
+#  noaltuidnick <on | off>		+optional+	used in specific situations (default off)
+#  logfile	<file>			+optional+
+#  userfile	<file>			+optional+
+#  pidfile	<file>			+optional+
+#  ident 	<ident>			+optional+
+#  realname 	<ircname>		+optional+
+#  nicks 	<nicks>			+required+	nicks separeted by spaces
+#  vhost 	<vhost ip>		+optional+
+#  server 	<name> 		[port]  +required+	can be set more than one
+#  server6 	<name> 		[port]  +required+	can be set more than one
+#  channel 	<channel>		+optional+	can be set more than one
+#  ctcptype	<type>			+optional+	0 = no ctcp, 1 = only for friends (default), 2 = for all
+#  replytype	<type>			+optional+	msg = messages, notice = notices (default)
+#  publicreply	<on | off>		+optional+	turn on publi messages (default off)
+#  delay	<seconds>		+optional+	additional delay/penalty for NICK/ISON command min val = 0 max val = 10
+#  alphabet	<on | off>		+optional+	turn on/off auto join to alphabet
+# 
+# Other info:
+#  when first char in each line is '#' or ';' line is hashed
+#  bot dont prase this line 
+
+nick Knb
+vhost 194.204.159.1
+;logfile Knb.log
+realname Need Knb? Go to http://knb.foryou.pl/ :)
+nicks a b c d e f g h i j k l m n o p q r s t u w v x y z
+channel #Knb
+server warszawa.irc.pl 6666
+server lublin.irc.pl 7776

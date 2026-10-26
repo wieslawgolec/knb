@@ -1,0 +1,587 @@
+CHANGELOG [EN]:
+
+> 0.2.x
+
+  04-05-2011 (0.2.5)
+  
+  added delay cfg option (now we can set additonal delay/penalty for NICK/ISON command 
+    - usefull when we dont want to be detect by any anty flood scripts - default 0)
+  added some randomness to self and channels check (selfcheck 1-61 mins, channels 1-2 mins)
+  added alphabet cfg option (now u can disable auto joining alphabet channel - default off)
+    (also when alphabet option is turned on bot will add alphabet channel only when it catch one char nick)
+  removed complirer warnings
+
+  12-09-2010 (0.2.4)
+  
+  added reason cfg option (used to set default part/kick/quit/other?? reason)
+  fixed compilation problem on new gcc
+  changed realname in examples cofig files
+  merged alphabet and default version (now all the time bot will be used improved catching algoritm)
+  packages are now compiled with ipv6 support by default 
+
+  21-10-2009 (0.2.3)
+
+  added ctcpreply cfg option
+  changed default ctcp reply to reply all (not only to added users)
+  
+  update files moved to new server (foryou.pl/~esio/c)
+
+  01-10-2006 (0.2.2)
+
+  fixed ctcp replies
+  fixed -host <mask>
+  fixed parting from '!' channels (untested)
+  
+  update files moved to new server (beer.one.pl/~esio/c)
+
+  24-04-2006 (0.2.1)
+   
+  fixed bug with .uf loading
+  updated cfg-examples
+  fixed .+host/.-host bugs
+  added aliases (user == host/mask; users == hosts/masks)
+  fixed `on invite' event
+  added `--without-validator' configure switch
+  improved im_up() (i think so *g*)
+  changed signal registration system
+  added core dumping system (required gdb and knb compiled with debug)
+  added `dontfork' conf set (only in knb compiled with debug) (default off) 
+  
+  now sources are hex'ed with my simply c code :)
+    
+  23-04-2006 (0.2.0) (final)
+
+  improved .op/.deop/.voice/.devoice/.invite cmds. work without argument when used on chan   
+  added .kick/.ban/.unban cmds
+  fixed problem with `.keepnick off'. now its work corectly
+  fixed bug with much CPU consuming on connecting :)
+  
+  added better queue builder (it will be more efective that the old one (only -alphabet edition))
+  added simple binary protector
+  
+  release info: (alphabet version)
+    - alphabet version has build in #alphabet chan. its constant, so you cannot part this chan:)
+    - its using new build queue system (its more effective than old one) 
+    - released only packages (sources available only for #alphabet crew (on request))
+  
+  20-04-2006
+  
+  added penalty reseting system every 24 h (bot shuldnt lag himself now)
+  increased TIMEOUT_TIME aka `max_lag_before_disconnect' from 10 to 15 mins
+  added `replytype' conf set. (now you are abble to set message type (privmsg or notice))
+    if replytype == "msg" -> reply will be sent as privmsg
+    if replytype == "notice" -> it will be send as notice (default)
+  added `publicreply' conf set. (this allow bot to sending info messages on channel)
+	default is off :)
+  improved .part/.cycle cmds. work without argument when used on chan   
+  
+  19-04-2006 (0.2.0-7)
+  
+  fixed possible bug in `on kick event' (no rejoin on kick on channels started with `!')
+  other minor changes :)
+
+  18-04-2006
+  
+  fixed compilation problems on gcc 2.9.95
+
+  16-04-2006 (0.2.0-6)
+  
+  added `!' channels support
+  added `ctcptype' conf set.
+    if ctcptype == 0 -> bot will not reply
+    if ctcptype == 1 -> bot will reply only to added hosts (default)
+    if ctcptype == 2 -> bot will reply to all 
+
+  15-04-2004
+  
+  fixed ctcp bug. no more EOF on CTCP TIME :)
+
+  30-03-2006 (0.2.0rc5)
+      
+  some changes in got_nick() (it should work good now (??))
+  
+  27-03-2006 
+  
+  fixed sigsev on connecting to nonircnet servers 
+  fixed compilation problems on amd64
+  added optimizing switches in makefiles
+  fixed some warnings in code ;)
+    
+  26-03-2006 (0.2.0rc4)
+  
+  fixed bug with not closing connection on error (no more conn flooding) :)
+  fixed small ommision in configure 
+  other small changes :)
+
+  25-03-2006 (0.2.0rc3)
+
+  small changes in code (on colide event)
+  renamed configure script to configure.sh and added new script which 
+    use bash as `configure.sh' interpeter (it seemed to be causing to much confusion)
+
+  14-12-2005
+  
+  fixed small ommision in got_nick()
+  fixed small issue in update()  
+  added `--with-restart' parametr to `!update' cmd
+  some other minor changes   
+
+  11-12-2005 (0.2.0rc2)
+  
+  fixed bug with write() error (no more process exiting)
+  added 'noaltnick' config option (if its set bot will not 'generate nick/use uid as nick' on nick fail on registration)
+	usefull in specific situation :>
+ 
+  03-12-2005 (0.2.0rc) (release candidate)
+  
+  fixed bug in `nick' cmd (command hasnt work when nick was catched)
+  improved -host/-mask cmd (now u can use numeric parametr (ex. .-host 2) :>)
+  small changes in configure script
+  fixed bug with `allready updating' 
+  fixed bug in precache_expand(). (useless free())
+
+> 0.1.9
+
+  28-11-2005 (0.1.9-4)
+  
+  fixed bug with 2nd catching mode 
+  fixed bug on join fail (now its checked correctly)
+  added backup, reload, say, msg, help cmd
+  some others minor changes
+  
+  todo:
+    (none??)
+
+  26-11-2005
+  
+  fixed bug with ident (now its should work correctly)
+  
+  25-11-2005 (0.1.9-3)
+  
+  fixed bug on fail on joining chan (bot dont change chan status)
+  added configure (now makefiles are generated)
+  added cygwin support (bot should now compile on cygiwn (but without ipv6, cause its isnt supported yet))
+  fixed omissions in configure
+  
+  24-11-2005 (0.1.9-2 aka test release build 2)
+  
+  fixed bug with check if bot is allready up
+  changed connecting timeout to 30 secs
+  changed lag before disconnect aka 'no response from server' to 10 mins
+  
+  todo: 
+    reload, msg, say, help cmd. :)
+
+  23-11-2005 (0.1.9 test release build 1)
+	- first but not last before 0.2 :>
+  
+  added update cmd (now it works asnychronic)
+  fixed bug with NULL chan on chanlist (smal omission 2nd time :))
+  added autorestart after sucessufull update
+
+  22-11-2005 (prerelease)
+  
+  fixed bug in got_nick(): small omission
+  rewrited update system 
+  added -u parametr (update)
+
+> 0.1.8 (test release (only srcs))
+  from 11-11-2005 to 21-11-2005 
+  
+  most of code was rewrited
+  what news: 
+    more aliases
+    bugfixes (also taht with starting from crontab on boxes with grsec)
+    code is now more readable
+    improved config loading/checking
+    improved userfile loading/checking
+    added new options in userfile (old userfile isnt compatybile with new one)
+    more check before acpeting command
+    now if no one is addded, each one can send cmd to bot and he will response
+  what todo:
+    update (needs to be writed from begin)
+    say, msg, reload commands.
+    (smth else??)
+
+> 0.1.7
+
+  08-11-2005
+  
+  another yet bug fixed 
+
+  07-11-2005
+  
+  fixed bug: on colide bot stop catching nicks
+
+> 0.1.6
+
+  07-11-2005
+  
+  some fixes in queue system
+  changed im_up function() ;)
+  warning: not tested on IRCnet!
+
+  06-11-2005
+  
+  rewrited queuing system (not it should work better)
+
+  05-11-2005
+  
+  fixed bug in help cmd. now it works :)
+
+
+> 0.1.5
+
+  17-10-2005
+  
+  debug debug debug :>
+
+  13-10-2005
+  
+  some changes in code..
+
+> 0.1.4
+
+  12-10-2005
+  
+  fixed bug(s) in got_nick() (rewrited function)
+  
+> 0.1.3
+
+  12-10-2005
+  
+  fixed stupid bug in got_nick_falied() 
+
+> 0.1.2
+
+  11-10-2005
+  
+  added delay between reconnections (default: 10 sec)
+  fixed bug in got_nick(). (now should it work correctly with queue system)
+  minor changes
+
+  28-09-2005
+  
+  added queue (now bot should work better) ;)
+  fixes in update
+  some minor fixes
+
+> 0.1.1
+
+  12-09-2005:
+  
+  changes in check_nicks(), got_nick(), got_nick_falied(), work()
+	(bugfixes, optimizing code)
+	
+  added die cmd (its work like exit)
+  
+  fixes in load_users()
+
+  09-09-2005:
+  
+  fixes/changes in got_nick() (now should it catch correctly)
+
+> 0.1.0 (final)
+
+  11-08-2005
+  
+  fixed typo in got_nick_falied(). now it should work correctly
+
+  08-08-2005
+  
+  changed ison/check cmd. now it don't send ISON request on using
+  other small changes
+
+  02-08-2005
+  
+  small improvment in nick checking
+
+  31-07-2005
+  
+  some changes in code (improvment checking)
+
+  25-07-2005
+  
+  fixes in got_nick_falied()
+  added ctcp support
+ 
+  23-07-2005
+  
+  added reload cmd
+  changed TIMEOUT_TIME to 5 mins
+
+  22-07-2005
+  
+  small fixes in code n makefiles
+
+  21-07-2005
+  
+  changed debug mode
+  changed cmds responses. no more msgs flood (changed to notices, target changed to nick)
+  changed nick checking. now bot wait exactly 30 mins after nick collision
+  other small changes in code
+
+  19-07-2005
+  
+  fixed bug in got_nick(). no more sigsegv if newnick == `['
+
+> 0.1.0rc16
+
+  10-07-2005
+  
+  fixed bug in -getnick cmd. now it should work correctly :)
+
+  09-07-2005
+  
+  changes in sources (now bot should compiled on gcc 2.9.x without errors)
+  added sh scripts (knbchk.sh & cron.sh). knbchk.sh is used to check if bot
+	is allredy up, if no he back him up; cron.sh is sued to add knbchk.sh
+	to cron automaticly. scripts are alternative for build in im_uo() function
+	which don't work on shells without /proc directory)
+
+> 0.1.0rc15
+
+  08-07-2005
+  
+  fixed bug in connect_bot() (no more ending process on connection falied)
+  added special check when only one nick to check (delay between checks = max 3 secs)
+  fixed bug(s) in got_nick() & got_nick_falied() (...)
+
+> 0.1.0rc14
+
+  29-06-2005
+  
+  fixed bug in got_invite() (privilages). no more inviting bot without added mask.
+  small changes in got_nick() & got_nick_falied().
+
+> 0.1.0rc13
+
+  19-06-2005
+  
+  fixed bug with (null) ident :)
+  fixed bugs in (+/-)getnick(s) commands :)
+  fixed possible bug in work() (...)
+
+> 0.1.0rc12
+
+  11-06-2005
+  
+  added sunos support :)
+
+  10-06-2005
+  
+  fixed bug in got_ison(). ison data wasnt enough good parsed (& compared) 
+  improved debug moge :)
+
+  09-06-2005
+  
+  fixes in code. now bot compile with -Wall without any warning (gcc v3.3.3) :)
+
+> 0.1.0rc11
+
+  08-06-2005
+  
+  fixed next bug in got_nick() no more "No response from server" :S
+  fixed bug in read_version() no more incorrect ver string
+  other small fixes
+
+> 0.1.0rc10
+
+  08-06-2005
+  
+  fixed bug in got_nick_falied() no more reconnect flood (i think so *g*) :>
+  fixed bug in update function (bot doesnt remove lock file after success)
+  fixed bug with update vars overrange, no more sigsegv on update :)
+  other small changes
+  changed TIMEOUT_TIME to 150 secs
+
+> 0.1.0rc9
+
+  07-06-2005
+  
+  added `pidfile' option
+  fixed small bug in got_nick() bot shouldn't block himself (reconnecting reason)
+  changed TIMEOUT_TIME to 120 secs
+  other small fixes
+
+> 0.1.0rc8
+
+  28-05-2005
+
+  changed get_nick_ident_host() (now it must work good) :)
+  added `userfile' option 
+  fixed `reconnect' cmd. now she work correctly also with custom servers
+  small changes in `cycle' , `part'  & `new' cmd
+  added `quit' cmd (work the same like `exit')
+  
+
+> 0.1.0rc7
+
+  24-05-2005
+  
+  fixed small bigs in `restart' & `+getnick' cmds
+  added `allready update' check      
+
+> 0.1.0rc6
+    
+  22-05-2005
+  
+  now really fixed bugs in got nick fail (unavailable nick) :)
+  added +getnick, -getnick, getnicks cmds
+  added system name checking
+
+> 0.1.0rc5
+
+  22-05-2005
+  
+  added `update', `restart' cmd
+  
+  21-05-2005
+  
+  added `-u' option :) now u can update bot with ./knb -u 
+  other changes (don't remember now)
+
+  19-05-2005
+  
+  fixed bugs in got nick fails (unavailable nicks)
+  some other small fixes
+
+> 0.1.0rc4
+
+  14-05-2005
+  
+  fixed stupid bug in `help' cmd, now it work propetrly
+  added invite cmd
+  added `logfile' option on config. bot will log some actions
+	to file (NAMES/NICK/JOIN/PART/QUIT/MODE/KICK/smth else?)
+  optimized got nick fails (when nick is unavilable bot will 
+	not check it during 30 mins - 10 secs)
+  some other small fixes
+	
+  KNOWN BUGS:
+  
+  im_up(): don't work correctly on all systems (@home box it work)
+    
+> 0.1.0rc3
+
+  some iprovments in check_config() 
+
+  09-05-2005
+  
+  fixed bug in `+mask' (bot has add mask also when exist the same)
+  some minor fixes (I don't remember now)
+  added check (chan_prefix()) to check if a channel name is valid
+  changed `channels' cmd. now she should printf `-' before chan if
+	    chan is inactive (bot is not there)
+
+> 0.1.0rc2:
+
+  06-05-2005
+
+  fixed stupid bugs in load_users() n save_users().
+
+> 0.1.0rc:
+
+  05-05-2005
+  
+  fixed small bug in `exit' cmd :) (mor about that in polish CHANGELOG)    
+  fixed im_ip() function. no its should work :)    
+
+  04-05-2005
+  
+  removed scripts botchk n cron - useless now    
+  other small fixes in code
+  changed nick creating, when is allready in use
+  added `nickappend' option in config file. its work like in psotnic :)
+  added `im allready up' check :)
+  fixed/improve mask checking on adding/removing
+  added possibility to add bots to cron [ ./knb -a conf confN]
+  small fixes in code :) 
+
+> 0.0.1b8
+ 
+  03-05-2005
+  
+  fixed small error/warning in `new' cmd
+ 
+  02-05-2005:
+  
+  added command !channels
+  fixed get_nick(). (more about that in polish CHANGELOG)
+  added mulit channels support. (more about that in polish CHANGELOG)
+  change maximum number of nicks to 50
+  change maximum number of channels to 21
+  change maximum number of servers to 10
+  change maximum number of masks to 12
+  
+  01-05-2005
+  smal fixes with penalty points :)  
+
+> 0.0.1b7
+  29-04-2005:
+  
+  fixed adding server on config prasing (more about that in polish CHANGELOG)
+  fixed connect_bot(). now its should work propetrly :)
+  fixed `keepnick' cmd. (more about that in polish CHANGELOG)
+  small fixed in penalty point counting
+  fixed error in got_privmsg(). (more about that in polish CHANGELOG)
+  added commands: op, deop, voice, devoice, cycle. 
+
+> 0.0.1b6
+  27-04-2005:
+  
+  small fixes in code 
+  changed timeout_time to 90 secs
+  added commands: !uptime, !server, !server6 
+
+> 0.0.1b5
+  26-04-2005:
+  
+  fixed function check_input(). (more about that in polish CHANGELOG)
+  
+  21-04-2005:
+  
+  changed smth in select(), now its should work propetrly :-P
+
+> 0.0.1b4
+  21-04-2005:
+  
+  changed time for select(). (more about that in polish CHANGELOG)    
+  
+  20-04-2005:
+  
+  fixed error in got_nick(). (more about that in polish CHANGELOG)    
+  
+  added `altnick' option in config. (more about that in polish CHANGELOG)    
+  
+  19-04-2005:
+
+  changed fork() position in code. (more about that in polish CHANGELOG)     
+	 
+> 0.0.1b3
+  18-04-2005:
+  
+  added config checker (more about that in polish CHANGELOG)
+  fixed penality points count on NICK sending
+  poprawiono liczenie pp przy wysylaniu NICK
+  changed name of files: knb.uf to $nick.uf
+	   knb.pid to pid.$nick
+  fixed error in `-mask' cmd. (more about that in polish CHANGELOG)
+  added scripts: botchk n cron to simplify adding bot to cron
+  added examples cfgs
+	 
+  
+> 0.0.1b2
+  17-04-2005:
+  
+  added possibility to run a few bots at once.
+	 ex: ./knb conf conf2 confN
+  added timeout_time. (more about that in polish CHANGELOG)
+
+> 0.0.1b
+  ??-04-2005:
+  
+  added commands: `help' n `version'
+  another small fixes n featuers which i dont remember :)
+
+  
