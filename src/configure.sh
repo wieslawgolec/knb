@@ -98,8 +98,7 @@ cfg.o \\
 irc.o \\
 auth.o \\
 sha256.o \\
-${SSL_OBJ}
-cmds.o \\
+${SSL_OBJ}cmds.o \\
 http.o \\
 match.o \\
 queue.o \\
@@ -139,8 +138,8 @@ echo "	@echo '-+- Creating release'
 	@mkdir knb/scripts
 	@cp ../scripts/* knb/scripts
 	@cp ../cfg-examples/* knb/cfg-examples
-	@cp ../CHANGELOG knb/CHANGELOG
-	@cp ../README.md knb/README.md 2>/dev/null || cp ../README knb/README || true
+	@cp ../CHANGELOG.md knb/CHANGELOG.md 2>/dev/null || cp ../CHANGELOG knb/CHANGELOG || true
+	@cp ../README.md knb/README.md 2>/dev/null || true
 	@echo -+- Stripping debug information
 	@strip \$(OUT) || true
 	@if [ -f validate.c ] && [ -f key.h ]; then \\
@@ -209,7 +208,7 @@ $TARGET:
 	@cp ../src/configure.sh knb/src/configure.sh
 	@cp ../src/*.h knb/src
 	@cp ../src/*.c knb/src
-	@cp ../CHANGELOG knb/CHANGELOG
+	@cp ../CHANGELOG.md knb/CHANGELOG.md 2>/dev/null || true
 	@cp ../README.md knb/README.md 2>/dev/null || true
 	@ln -s cfg-examples/conf-ipv4 knb/conf
 	@echo '-+- Creating archive'
