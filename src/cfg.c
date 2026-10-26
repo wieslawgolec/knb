@@ -407,6 +407,40 @@ bool set_variable(char *var, char *args, char *error)
 	    return true;
 	}
 
+	if(!strcmp(var, CFG_SSL))
+	{
+	    if(!(i = strlen(args)))
+		return err_return(-102, error, var, NULL);
+	    if(i > 5)
+		return err_return(0, error, var, args);
+	    if(!isbool(args))
+		return err_return(-104, error, var, args);
+	    me.prefer_ssl = get_bool(args);
+	    return true;
+	}
+	if(!strcmp(var, CFG_SASLUSER))
+	{
+	    if(!(i = strlen(args)))
+		return err_return(-102, error, var, NULL);
+	    if(i > IDENT_LEN)
+		return err_return(0, error, var, args);
+	    if(strlen(me.sasl_user))
+		return err_return(-103, error, var, args);
+	    strcpy(me.sasl_user, args);
+	    return true;
+	}
+	if(!strcmp(var, CFG_SASLPASS))
+	{
+	    if(!(i = strlen(args)))
+		return err_return(-102, error, var, NULL);
+	    if(i > 63)
+		return err_return(0, error, var, args);
+	    if(strlen(me.sasl_pass))
+		return err_return(-103, error, var, args);
+	    strcpy(me.sasl_pass, args);
+	    return true;
+	}
+
 #ifdef DEBUG
 	if(!strcmp(var, CFG_DONTFORK))
 	{
