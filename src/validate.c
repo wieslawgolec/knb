@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "md5.h"
+#include "sha256.h"
 #include "validate.h"
 #include "key.h"
 
@@ -33,14 +33,26 @@ void validate(char *thisfile)
 			int ok = 1;
 			char *data;
 			unsigned char digest[32];
+			unsigned char d1[32], d2[32];
 
 			data = (char *) malloc(file.st_size);
-			if(read(fd, data, file.st_size) == file.st_size);
+			if (!data) {
+				close(fd);
+				printf("-+- This file is hacked\n");
+				exit(1);
+			}
+
+			if(read(fd, data, file.st_size) == file.st_size)
 			{
 				memcpy(&n, &FileMD5[32], 4);
 
-				MD5Hash(&digest[0], data, n, Key, sizeof(Key)-1);
-				MD5Hash(&digest[16], data+n+36, file.st_size-n-36, Key, sizeof(Key)-1);
+				/* Two SHA-256s; keep first 16 bytes of each so the
+				 * embedded 32-byte slot (and 36-byte magic) stay the same size.
+				 */
+				SHA256Hash(d1, data, n, Key, sizeof(Key)-1);
+				SHA256Hash(d2, data+n+36, file.st_size-n-36, Key, sizeof(Key)-1);
+				memcpy(digest,      d1, 16);
+				memcpy(digest + 16, d2, 16);
 
 				for(i=0; i<32; ++i)
 				{
@@ -54,7 +66,15 @@ void validate(char *thisfile)
 				free(data);
 				if(ok) return;
 			}
-			free(data);
+			else
+			{
+				close(fd);
+				free(data);
+			}
+		}
+		else
+		{
+			close(fd);
 		}
 	}
 	printf("-+- This file is hacked\n");
