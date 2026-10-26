@@ -1,5 +1,6 @@
 /*
- * Optional OpenSSL client support + small base64 helper for SASL PLAIN.
+ * Optional OpenSSL client support for IRCNet TLS.
+ * Base64 for SASL PLAIN lives in auth.c (always linked).
  */
 
 #include "prots.h"
@@ -140,38 +141,3 @@ int ssl_write_sock(const char *buf, int len)
 }
 
 #endif /* HAVE_SSL */
-
-/* Base64 encode for SASL PLAIN (no external deps) */
-int b64_encode(const unsigned char *in, int inlen, char *out, int outmax)
-{
-    static const char tbl[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    int i, o = 0;
-
-    for (i = 0; i + 2 < inlen; i += 3) {
-        if (o + 4 >= outmax)
-            return -1;
-        out[o++] = tbl[(in[i] >> 2) & 0x3f];
-        out[o++] = tbl[((in[i] & 0x3) << 4) | ((in[i + 1] >> 4) & 0xf)];
-        out[o++] = tbl[((in[i + 1] & 0xf) << 2) | ((in[i + 2] >> 6) & 0x3)];
-        out[o++] = tbl[in[i + 2] & 0x3f];
-    }
-    if (i < inlen) {
-        if (o + 4 >= outmax)
-            return -1;
-        out[o++] = tbl[(in[i] >> 2) & 0x3f];
-        if (i + 1 < inlen) {
-            out[o++] = tbl[((in[i] & 0x3) << 4) | ((in[i + 1] >> 4) & 0xf)];
-            out[o++] = tbl[((in[i + 1] & 0xf) << 2)];
-            out[o++] = '=';
-        } else {
-            out[o++] = tbl[((in[i] & 0x3) << 4)];
-            out[o++] = '=';
-            out[o++] = '=';
-        }
-    }
-    if (o >= outmax)
-        return -1;
-    out[o] = '\0';
-    return o;
-}
