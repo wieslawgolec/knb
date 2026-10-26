@@ -68,6 +68,7 @@ $TARGET:
 	@echo '-+- key.h ready' " > Makefile.$TARGET
 }
 
+# Writes the common header + link recipe start (post-link steps appended next)
 function makefile_up()
 {
 echo "#
@@ -104,19 +105,25 @@ main.o
 
 $TARGET: key.h \$(EXE_DEPEND)
 	@echo '-+- Linking'
-	@\$(CC) \$(EXE_DEPEND) -o \$(OUT) \$(CFLAGS) \$(LFLAGS)
+	@\$(CC) \$(EXE_DEPEND) -o \$(OUT) \$(CFLAGS) \$(LFLAGS)"  > Makefile.$TARGET
+}
 
+# Secondary rules must come AFTER the full main recipe
+function makefile_footer()
+{
+echo "
 # key.h is required by validate.c
 validate.o: key.h
 
 key.h:
 	@make -f Makefile.key
-"  > Makefile.$TARGET
+" >> Makefile.$TARGET
 }
 
 function makefile_done()
 {
 	echo "	@echo '-+- Done'" >> Makefile.$TARGET
+	makefile_footer
 }
 
 function makefile_release()
@@ -156,7 +163,7 @@ echo "	@echo -+- Stripping debug information
 		if [ -x ./validator ]; then echo '-+- Patching file'; ./validator \$(OUT) || true; fi; \\
 	fi
 	@mv \$(OUT) ../\$(OUT)
-	@rm -fr ../knb 
+	@rm -fr ../knb
 	@ln -s \$(OUT) ../knb" >> Makefile.$TARGET
 }
 
@@ -168,7 +175,7 @@ echo "	@echo '-+- Building validator (optional)'
 		if [ -x ./validator ]; then ./validator \$(OUT) || true; fi; \\
 	fi
 	@mv \$(OUT) ../\$(OUT)
-	@rm -fr ../knb 
+	@rm -fr ../knb
 	@ln -s \$(OUT) ../knb" >> Makefile.$TARGET
 }
 
@@ -387,6 +394,10 @@ do
 	src) makefile_src ;;
 	clean) makefile_clean ;;
     esac 
-    makefile_done
+    # key/src/clean have complete recipes already; only add footer for build targets
+    case $TARGET in
+	dynamic|static|debug|release) makefile_done ;;
+	*) true ;;
+    esac
 done
 echo '-+- Configure is done'
