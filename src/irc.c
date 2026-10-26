@@ -61,7 +61,8 @@ void send_reply(char *to, char *format, ...)
 	me.idle = now;
     }
     else
-	sock_write(me.sock, "NOTICE %s :%s\r\n", to, s);	
+	sock_write(me.sock, "NOTICE %s :%s\r\n", to, s);
+	
 	
     add_penalty(3);
 }
@@ -273,14 +274,6 @@ void irc_msg(char *b)
 	for(i = j; ; i++)
 	    if(b[i] == ' ' || !b[i])
 	    {
-	    /*
-		// possible sigsegv
-		if(j != 0 && b[j] == '[')
-		{
-		    j++;
-		    i = strlen(b);
-		}
-	    */
 		if(j != 0 && b[j] == ':')
 		{
 		    j++;
@@ -299,6 +292,13 @@ void irc_msg(char *b)
     }
 
     me.timeout = now;
+
+    /* CAP / SASL (consumed before other handlers) */
+    if (handle_cap_sasl(s, k)) {
+	for (i = 0; i < 20; i++)
+	    free(s[i]);
+	return;
+    }
 
     if(!strcmp(s[1], "020"))
     {
@@ -346,8 +346,8 @@ void irc_msg(char *b)
 	    	loguj("Got welcome: '%s!%s@%s'", me.nick, me.ident, me.host);
 
 	    me.next_chan_check = now + CHAN_CHECK_DELAY;
-	    me.next_penalty_reset = now + PENALTY_RESET_TIME; /* 24 h*/
-	    channels();	
+	    me.next_penalty_reset = now + PENALTY_RESET_TIME;
+	    channels();
 	}    
 	else
 	{
@@ -393,7 +393,6 @@ void irc_msg(char *b)
 	got_kick(s[0]+1, s[3], s[2]);
     }
 
-    /* cannot join channel: limit, invite, banned, key */
     if(!strcmp(s[1], "471") || !strcmp(s[1], "473") || !strcmp(s[1], "474") || !strcmp(s[1], "475"))
     {
 	i = get_index_by_chan_f(s[3]);
@@ -434,10 +433,8 @@ void irc_msg(char *b)
     {
 #ifdef DEBUG
 	printd("Got ison: '%s'", s[3]);
-
 	if(strlen(me.logfile))
 	    loguj("Got ison: '%s'", s[3]);
-
 #endif
     	got_ison(s[3]);
     }
@@ -466,17 +463,15 @@ void irc_msg(char *b)
 	}
 	else
 	{
-	
 #ifdef DEBUG
       	    printd("got msg: '%s' from %s", s[3]+1, s[0]+1);
-
 	    if(strlen(me.logfile))
 	    	loguj("got msg: '%s' from %s", s[3]+1, s[0]+1);
 #endif
 	    got_privmsg(s[0]+1, s[2], s[3]);
 	}
     }
-    if(!strcmp(s[1], "433")) // nick w uzyciu
+    if(!strcmp(s[1], "433"))
     {
 #ifdef DEBUG
         printd("Got fail: '%s' allready in use", s[3]);
@@ -484,9 +479,9 @@ void irc_msg(char *b)
 	if(strlen(me.logfile))
 		loguj("Got fail: '%s' allready in use", s[3]);
 
-	got_fail(s[3], 1); // nick allready in use
+	got_fail(s[3], 1);
     }
-    if(!strcmp(s[1], "432")) // bad nick
+    if(!strcmp(s[1], "432"))
     {
 #ifdef DEBUG
         printd("Got fail: '%s' is incorrect", s[3]);
@@ -494,9 +489,9 @@ void irc_msg(char *b)
 	if(strlen(me.logfile))
 		loguj("Got fail: '%s' is incorrect", s[3]);
 
-	got_fail(s[3], 3); // bad
+	got_fail(s[3], 3);
     }
-    if(!strcmp(s[1], "437")) // nick/channel chwilowo niedostepny
+    if(!strcmp(s[1], "437"))
     {
     	i = get_index_by_chan_f(s[3]);
 #ifdef DEBUG
@@ -513,7 +508,7 @@ void irc_msg(char *b)
        			loguj("Cannot join '%s' (Temporality unavailable)", s[3]);
         }
         if(i == -1)
-        	got_fail(s[3], 2); // nick unavailable in use
+        	got_fail(s[3], 2);
 	else
 		me.channel[i].status = 0;
     }
@@ -526,7 +521,7 @@ void irc_msg(char *b)
 		loguj("Got nick: '%s' is now know as '%s'", s[0]+1, s[2]);
 	got_nick(s[0]+1, s[2]);
     }
-    if(!strcmp(s[1], "047")) // kolid :)
+    if(!strcmp(s[1], "047"))
     {
 #ifdef DEBUG
       	printd("Colide on '%s'", me.nick);
@@ -535,13 +530,6 @@ void irc_msg(char *b)
         	loguj("Colide on '%s'", me.nick);
 
 	add_penalty(4);
-/*
-	if(add_queue(me.uid, HIGH_PRIO))
-	{
-	    i = get_index_by_queue(me.uid);
-	    queue[i].send = true;
-	}
-*/
     }
     if(!strcmp(s[0], "ERROR"))
     {
@@ -575,6 +563,12 @@ void check_input(void)
 
     if(me.sock)
     {
+#ifdef HAVE_SSL
+	if (me.use_ssl && me.ssl_state == 1) {
+	    FD_SET(me.sock, &fdr);
+	    FD_SET(me.sock, &fdw);
+	} else
+#endif
 	if(me.conn)
 	    FD_SET(me.sock, &fdr);
 	else
@@ -589,7 +583,6 @@ void check_input(void)
 #endif
 	    if(strlen(me.logfile))
 	    	loguj("Got disconnected: '%s!%s@%s' (Connection timeout)", me.nick, me.ident, me.host);
-		
 	    send_quit("Connection timeout");
 	}
     }
@@ -606,7 +599,6 @@ void check_input(void)
 
     if(me.sock)
     {
-	/* update ? */
 	if(me.update.child && FD_ISSET(me.update.child, &fdr))
 	{
 	    j = read(me.update.child, buf, MAX_LEN);
@@ -619,9 +611,55 @@ void check_input(void)
 	}
 	
         bad = false;
+
+#ifdef HAVE_SSL
+	if (me.use_ssl && me.ssl_state == 1 &&
+	    (FD_ISSET(me.sock, &fdr) || FD_ISSET(me.sock, &fdw)))
+	{
+	    int hs = ssl_handshake();
+	    if (hs < 0) {
+#ifdef DEBUG
+		printd("SSL handshake failed");
+#endif
+		if (strlen(me.logfile))
+		    loguj("SSL handshake failed");
+		send_quit("SSL handshake failed");
+		return;
+	    }
+	    if (hs == 1) {
+		me.ssl_state = 0;
+#ifdef DEBUG
+		printd("SSL handshake complete");
+#endif
+		if (strlen(me.logfile))
+		    loguj("SSL handshake complete");
+		start_irc_register();
+	    }
+	    return;
+	}
+#endif
+
 	if(FD_ISSET(me.sock, &fdr))
 	{
 	    k = j = strlen(me.buf);
+#ifdef HAVE_SSL
+	    if (me.use_ssl && me.ssl && me.ssl_state == 0) {
+		int nr = ssl_read_sock((char *) &me.buf[j], 1024 - j);
+		if (nr < 0) {
+#ifdef DEBUG
+		    printd("Got disconnected: '%s!%s@%s' (SSL read error)", me.nick, me.ident, me.host);
+#endif
+		    if(strlen(me.logfile))
+			loguj("Got disconnected: '%s!%s@%s' (SSL read error)", me.nick, me.ident, me.host);
+		    send_quit("SSL read error");
+		    bad = true;
+		} else if (nr == 0) {
+		    return;
+		} else {
+		    k += nr;
+		}
+	    } else
+#endif
 	    if((k += read(me.sock, (char *) &me.buf[j], 1024 - j)) == -1)
 	    {
 #ifdef DEBUG
@@ -629,22 +667,17 @@ void check_input(void)
 #endif
 		if(strlen(me.logfile))
 		    loguj("Got disconnected: '%s!%s@%s' (Read error)", me.nick, me.ident, me.host);
-
 		send_quit("Read error");
                 bad = true;
 	    }
-	    else
+	    if(!bad)
 	    {
-		if(!bad)
-		{
-		    me.buf[k] = 0;
-		    irc();
-		}
+		me.buf[k] = 0;
+		irc();
 	    }
 	}
 	if(FD_ISSET(me.sock, &fdw))
 	{
-	
 	    int j, dupa;
 	    socklen_t k = 4;
 
@@ -658,9 +691,8 @@ void check_input(void)
 #endif
 		if(strlen(me.logfile))
 		    loguj("Got disconnected: '%s!%s@%s' (Connection refused)", me.nick, me.ident, me.host);
-
 		send_quit("Connection refused");
-	    } 
+	    }
 	    if(!bad)
 	    {
 		if(me.conn < 1)
@@ -672,14 +704,19 @@ void check_input(void)
 		    if(strlen(me.logfile))
 			loguj("Connection with server estabilished");
 
-    		    if(strcasecmp(me.nick, me.orignick))
-    		    	strcpy(me.nick, me.orignick);
-
-		    sock_write(me.sock, "NICK %s\r\n", me.nick);
-		    sock_write(me.sock, "USER %s 8 * :%s\r\n", me.user, me.realname);
+#ifdef HAVE_SSL
+		    if (me.use_ssl) {
+			if (!ssl_attach(me.sock)) {
+			    send_quit("SSL attach failed");
+			    return;
+			}
+			me.ssl_state = 1;
+			return;
+		    }
+#endif
+		    start_irc_register();
 		}
 	    }
-
 	}
     }
 }
@@ -700,7 +737,6 @@ int get_index_by_chan_f(char *ch)
 	int i, j;
 	char chfix[CHAN_LEN + 1];
 	
-	/* chan fixes for names with '!' */
 	memset(chfix, 0, sizeof(chfix));
 	
 	if(ch[0] == '!')
@@ -724,7 +760,6 @@ int get_index_by_chan_f(char *ch)
         return j;
 }
 
-
 int get_index_by_letter(char *nick)
 {
 	int i, j;
@@ -747,7 +782,7 @@ void selfcheck()
 {
 	if(now >= me.next_notice)
 	{
-    		me.next_notice = now + 60 + (rand() % 3601); // next notice every 1-61 mins
+    		me.next_notice = now + 60 + (rand() % 3601);
         	send_notice(me.nick, "%s", KNB_SHORT);
 	}
 }
@@ -770,7 +805,6 @@ void send_ison()
 	sock_write(me.sock, "ISON %s\r\n", buf);
 	me.ison = true;
 }
-
 
 bool add_channel(char *ch, char *key)
 {
@@ -846,7 +880,6 @@ void channels()
     if(has_penalty() > 10)
 	return;
 
-    // only add chanel if alphabet wasnt excluded in cfg
     if(strlen(me.nick) == 1 && me.alphabet == 1 && me.catched == true)
     {
         if((i = get_index_by_chan(KNB_ALPHABET)) == -1)
