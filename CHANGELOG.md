@@ -14,7 +14,7 @@
 
 ## 01-09-2016 (0.2.6)
   
-- released source code version
+- released unchanged 0.2.5 source code version as 0.2.6
 
 ## 04-05-2011 (0.2.5)
   
