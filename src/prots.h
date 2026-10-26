@@ -44,3 +44,4 @@ typedef void (*sighandler_t)(int);
 #include "irc.h"
 #include "uf.h"
 #include "ssl.h"
+#include "auth.h"

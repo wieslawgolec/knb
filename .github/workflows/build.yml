@@ -15,13 +15,22 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential
-      - name: Configure and build
+          sudo apt-get install -y build-essential libssl-dev pkg-config
+      - name: Configure and build (plain)
         working-directory: src
         run: |
           set -e
           chmod +x configure configure.sh
-          bash configure --without-validator
+          bash configure --without-validator --without-ssl
+          make dynamic
+          ls -la ../knb*
+          file ../knb*
+      - name: Configure and build (with SSL)
+        working-directory: src
+        run: |
+          set -e
+          make clean || true
+          bash configure --without-validator --with-ssl
           make dynamic
           ls -la ../knb*
           file ../knb*
@@ -31,6 +40,8 @@ jobs:
     name: macOS
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install openssl pkg-config || true
       - name: Configure and build
         working-directory: src
         run: |
@@ -51,7 +62,7 @@ jobs:
         with:
           usesh: true
           prepare: |
-            pkg install -y gmake gcc bash
+            pkg install -y gmake gcc bash openssl pkgconf
           run: |
             set -e
             cd src

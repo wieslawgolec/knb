@@ -1,0 +1,28 @@
+#
+# Example config with TLS (IRCNet 2.11+ / 2.12) and SASL PLAIN
+#
+# Build with OpenSSL: ./configure --with-ssl && make dynamic
+#
+# Port 6697 enables TLS automatically. You can also set:
+#   ssl on
+#
+# SASL:
+#   sasluser <account>
+#   saslpass <password>
+#
+
+nick Knb
+realname knb with TLS/SASL
+nicks a b c d e f g h i j k l m n o p q r s t u w v x y z
+channel #Knb
+
+# Prefer TLS for servers (optional if you only use 6697)
+ssl on
+
+# SASL PLAIN (leave empty to skip)
+;sasluser myaccount
+;saslpass secret
+
+# Modern IRCNet TLS port
+server irc.example.net 6697
+server irc.example.net 6667
