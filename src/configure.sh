@@ -90,7 +90,7 @@ LFLAGS = $LFLAGS
 EXE_DEPEND = uf.o \\
 cfg.o \\
 irc.o \\
-md5.o \\
+sha256.o \\
 cmds.o \\
 http.o \\
 match.o \\
@@ -126,7 +126,7 @@ echo "	@echo '-+- Creating release'
 	@echo -+- Striping debug information
 	@strip \$(OUT)
 	@echo '-+- Building validator'
-	@\$(CC) md5.o -o validator validator.c 
+	@\$(CC) sha256.o -o validator validator.c 
 	@echo '-+- Patching file'
 	@./validator \$(OUT)
 	@cp \$(OUT) knb/\$(OUT)
@@ -144,7 +144,7 @@ function makefile_world()
 echo "	@echo -+- Striping debug information
 	@strip \$(OUT)
 	@echo '-+- Building validator'
-	@\$(CC) md5.o -o validator validator.c 
+	@\$(CC) sha256.o -o validator validator.c 
 	@echo '-+- Patching file'
 	@./validator \$(OUT)
 
@@ -156,7 +156,7 @@ echo "	@echo -+- Striping debug information
 function makefile_deb()
 {
 echo "	@echo '-+- Building validator'
-	@\$(CC) md5.o -o validator validator.c 
+	@\$(CC) sha256.o -o validator validator.c 
 	@echo '-+- Patching file'
 	@./validator \$(OUT)
 	@mv \$(OUT) ../\$(OUT)
